@@ -250,6 +250,13 @@ func (a *API) InternalDeploy(c *gin.Context) {
 				return
 			}
 		}
+		if perror.Cause(err) == herrors.ErrInProgress {
+			log.WithFiled(c, "op", op).Infof("%+v", err)
+			response.AbortWithRPCError(
+				c, rpcerror.ForbiddenError.WithErrMsgf("deploying is already in progress, try it later"),
+			)
+			return
+		}
 		if perror.Cause(err) == herrors.ErrTokenInvalid {
 			log.WithFiled(c, "op", op).Errorf("%+v", err)
 			response.AbortWithUnauthorized(c, common.Unauthorized, err.Error())
@@ -349,6 +356,14 @@ func (a *API) Deploy(c *gin.Context) {
 				response.AbortWithRPCError(c, rpcerror.NotFoundError.WithErrMsg(err.Error()))
 				return
 			}
+		}
+
+		if perror.Cause(err) == herrors.ErrInProgress {
+			log.WithFiled(c, "op", op).Infof("%+v", err)
+			response.AbortWithRPCError(
+				c, rpcerror.ForbiddenError.WithErrMsgf("deploying is already in progress, try it later"),
+			)
+			return
 		}
 
 		if perror.Cause(err) == herrors.ErrClusterNoChange || perror.Cause(err) == herrors.ErrShouldBuildDeployFirst {
@@ -481,6 +496,13 @@ func (a *API) Rollback(c *gin.Context) {
 			return
 		} else if perror.Cause(err) == herrors.ErrParamInvalid {
 			response.AbortWithRPCError(c, rpcerror.BadRequestError.WithErrMsg(err.Error()))
+			return
+		}
+		if perror.Cause(err) == herrors.ErrInProgress {
+			log.WithFiled(c, "op", op).Infof("%+v", err)
+			response.AbortWithRPCError(
+				c, rpcerror.ForbiddenError.WithErrMsgf("deploying is already in progress, try it later"),
+			)
 			return
 		}
 		log.WithFiled(c, "op", op).Errorf("%+v", err)

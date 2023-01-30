@@ -261,7 +261,18 @@ func (h *helper) DeployApplication(ctx context.Context, application string, revi
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return perror.Wrap(herrors.ErrHTTPRespNotAsExpected, common.Response(ctx, resp))
+		errMsg := ""
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Error(ctx, err)
+			errMsg = err.Error()
+		} else {
+			errMsg = string(data)
+		}
+		if strings.Contains(errMsg, "in progress") {
+			return perror.Wrap(herrors.ErrInProgress, errMsg)
+		}
+		return perror.Wrap(herrors.ErrHTTPRespNotAsExpected, errMsg)
 	}
 
 	return nil
@@ -395,6 +406,12 @@ func (h *helper) GetApplicationTree(ctx context.Context, application string) (
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, perror.Wrapf(
+				herrors.NewErrNotFound(herrors.ApplicationInArgo, "application not found in argo"),
+				"applications not found: %v", err.Error(),
+			)
+		}
 		return nil, perror.Wrap(herrors.ErrHTTPRespNotAsExpected, common.Response(ctx, resp))
 	}
 
@@ -471,6 +488,12 @@ func (h *helper) ListResourceEvents(ctx context.Context, application string, par
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, perror.Wrapf(
+				herrors.NewErrNotFound(herrors.ApplicationInArgo, "application not found in argo"),
+				"applications not found: %v", err.Error(),
+			)
+		}
 		return nil, perror.Wrap(herrors.ErrHTTPRespNotAsExpected, common.Response(ctx, resp))
 	}
 

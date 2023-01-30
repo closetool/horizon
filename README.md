@@ -1,4 +1,4 @@
-<img src="image/readme/horizon.svg">
+<img style="margin-left: auto; margin-right: auto; display: block" src="image/readme/horizon.svg">
 
 [![license](https://img.shields.io/hexpm/l/plug)]() [![version](https://img.shields.io/badge/horizon-v2.0.1-yellow)]()
 

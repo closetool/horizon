@@ -32,42 +32,31 @@ func (c *Clusterv2) toClusterModel(application *appmodels.Application) *models.C
 		RegionName:      c.RegionName,
 		Description:     c.Description,
 		ExpireSeconds:   c.ExpireSeconds,
+		GitURL:          c.GitURL,
+		GitSubfolder:    c.GitSubfolder,
+		GitRef:          c.GitRef,
+		GitRefType:      c.GitRefType,
+		Image:           c.Image,
 		Template:        c.Template,
 		TemplateRelease: c.TemplateRelease,
 		Status:          common.ClusterStatusCreating,
 	}
-	if cluster.Template == application.Template {
-		cluster.GitURL = func() string {
-			if c.GitURL == "" && application.GitURL != "" {
-				return application.GitURL
-			}
-			// if URL is empty string, this means this cluster not depends on build from git
-			return c.GitURL
-		}()
-		cluster.GitSubfolder = func() string {
-			if c.GitSubfolder == "" {
-				return application.GitSubfolder
-			}
-			return c.GitSubfolder
-		}()
-		cluster.GitRef = func() string {
-			if c.GitRef == "" {
-				return application.GitRef
-			}
-			return c.GitRef
-		}()
-		cluster.GitRefType = func() string {
-			if c.GitRefType == "" {
-				return application.GitRefType
-			}
-			return c.GitRefType
-		}()
-		cluster.Image = func() string {
-			if c.Image == "" {
-				return application.Image
-			}
-			return c.Image
-		}()
+	if c.Template == application.Template {
+		if c.GitURL == "" {
+			c.GitURL = application.GitURL
+		}
+		if c.GitSubfolder == "" {
+			c.GitSubfolder = application.GitSubfolder
+		}
+		if c.GitRef == "" {
+			c.GitRef = application.GitRef
+		}
+		if c.GitRefType == "" {
+			c.GitRefType = application.GitRefType
+		}
+		if c.Image == "" {
+			c.Image = application.Image
+		}
 	}
 	return cluster
 }
